@@ -86,10 +86,7 @@ def generate_constants(field, n, t, R_F, R_P, prime_number):
 def print_hex(c, last, rust=False):
     c = int(c)
     if rust:
-        print("        pallas::Base::from_raw([")
-        for i in range(0, FIELD_SIZE, 64):
-            print("            0x%04x_%04x_%04x_%04x," % tuple([(c >> j) & 0xFFFF for j in range(i+48, i-1, -16)]))
-        print("        ]),")
+        print(f"        Fp::new({c}),")
     else:
         hex_length = (FIELD_SIZE + 3)//4 + 2 # +2 for "0x"
         print("{0:#0{1}x}".format(c, hex_length), end="" if last else ", ")
@@ -371,6 +368,8 @@ def main(args):
     # Matrix
     linear_layer = generate_matrix(FIELD, FIELD_SIZE, NUM_CELLS)
     print_linear_layer(linear_layer, FIELD_SIZE, NUM_CELLS, rust=rust)
+
+    print(f"NUM ROUNDS: {len(round_constants) // NUM_CELLS}")
 
 if __name__ == "__main__":
     main(sys.argv[1:])

@@ -93,15 +93,21 @@ def print_parameters(prime, t, alpha, M, security_margin):
     print("  min_size_cost =", min_size_cost)
     print("")
 
-# Pasta (either p or q will give the same results)
-p = 0x40000000000000000000000000000000224698fc094cf91b992d30ed00000001
+# Goldilocks
+p = 0xffffffff00000001
 
-# x^5 for Pasta F_p, width 3
-t = 3
+# x^7 for Goldilocks F_p, width 12 (rate 8)
+t = 12
 M = 128
 
-print("--- x^5 WITH security margin ---")
-print_parameters(p, t, 5, M, True)
+print("--- x^7 WITH security margin t = 12 ---")
+print_parameters(p, t, 7, M, True)
+
+# x^7 for Goldilocks F_p, width 8 (rate 4, Jive for compression)
+t = 8
+
+print("--- x^7 WITH security margin t = 8 ---")
+print_parameters(p, t, 7, M, True)
 
 # We don't care about this option.
 #print("--- x^5 WITHOUT security margin ---")

@@ -1,0 +1,9 @@
+1 - GF(p)
+0 - x^\alpha
+64 - field size in bits
+8 - width
+8 - R_F
+22 - R_P
+0xffffffff00000001 - field size
+
+1 0 64 8 8 22 0xffffffff00000001
