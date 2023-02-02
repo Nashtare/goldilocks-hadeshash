@@ -64,8 +64,6 @@ for i in range(0, R_F + R_P):
     for j in range(0, t):
         round_constants_field.append(F(round_constants[i][j]))
 
-#MDS_matrix_field = MDS_matrix_field.transpose() # QUICK FIX TO CHANGE MATRIX MUL ORDER (BOTH M AND M^T ARE SECURE HERE!)
-
 def print_hex(c, last, rust=False):
     c = int(c)
     if rust:
@@ -88,6 +86,8 @@ def perm(input_words):
     round_constants_counter = 0
 
     state_words = list(input_words)
+    while len(state_words) < t:
+        state_words.append(0)
 
     # First full rounds
     for r in range(0, R_f):
@@ -96,7 +96,7 @@ def perm(input_words):
             state_words[i] = state_words[i] + round_constants_field[round_constants_counter]
             round_constants_counter += 1
         for i in range(0, t):
-            state_words[i] = (state_words[i])^5
+            state_words[i] = (state_words[i])**7
         state_words = list(MDS_matrix_field * vector(state_words))
 
     # Middle partial rounds
@@ -105,7 +105,7 @@ def perm(input_words):
         for i in range(0, t):
             state_words[i] = state_words[i] + round_constants_field[round_constants_counter]
             round_constants_counter += 1
-        state_words[0] = (state_words[0])^5
+        state_words[0] = (state_words[0])**7
         state_words = list(MDS_matrix_field * vector(state_words))
 
     # Last full rounds
@@ -115,7 +115,7 @@ def perm(input_words):
             state_words[i] = state_words[i] + round_constants_field[round_constants_counter]
             round_constants_counter += 1
         for i in range(0, t):
-            state_words[i] = (state_words[i])^5
+            state_words[i] = (state_words[i])**7
         state_words = list(MDS_matrix_field * vector(state_words))
 
     return state_words
@@ -133,6 +133,21 @@ def main(args):
     print_words_to_hex(input_words, rust=rust)
     print("Output:")
     print_words_to_hex(output_words, rust=rust)
+
+    if rust:
+        L = [[0 for i in range(8)], [1 for i in range(8)]]
+        for j in range(10):
+            L.append([F.random_element() for i in range(8)])
+        print("input_data:")
+        for l in L:
+            print_words_to_hex(l, rust=rust)
+
+        R = []
+        for l in L:
+            R.append(perm(l))
+        print("output_data:")
+        for r in R:
+            print_words_to_hex(r[0:4], rust=rust)
 
 if __name__ == "__main__":
     import sys

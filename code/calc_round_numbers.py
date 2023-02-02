@@ -108,7 +108,3 @@ t = 8
 
 print("--- x^7 WITH security margin t = 8 ---")
 print_parameters(p, t, 7, M, True)
-
-# We don't care about this option.
-#print("--- x^5 WITHOUT security margin ---")
-#print_parameters(p, t, 5, M, False)
