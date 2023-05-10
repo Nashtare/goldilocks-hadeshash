@@ -149,6 +149,42 @@ def create_mds_p(n, t):
         if flag == False:
             continue
         return M
+    
+def calc_equivalent_matrices(MDS_matrix_field, t, R_P):
+    # Following idea: Split M into M' * M'', where M'' is "cheap" and M' can move before the partial nonlinear layer
+    # The "previous" matrix layer is then M * M'. Due to the construction of M', the M[0,0] and v values will be the same for the new M' (and I also, obviously)
+    # Thus: Compute the matrices, store the w_hat and v_hat values
+
+    MDS_matrix_field_transpose = MDS_matrix_field.transpose()
+
+    w_hat_collection = []
+    v_collection = []
+    v = MDS_matrix_field_transpose[[0], list(range(1,t))]
+    # print "M:", MDS_matrix_field_transpose
+    # print "v:", v
+    M_mul = MDS_matrix_field_transpose
+    M_i = matrix(F, t, t)
+    for i in range(R_P - 1, -1, -1):
+        M_hat = M_mul[list(range(1,t)), list(range(1,t))]
+        w = M_mul[list(range(1,t)), [0]]
+        v = M_mul[[0], list(range(1,t))]
+        v_collection.append(v.list())
+        w_hat = M_hat.inverse() * w
+        w_hat_collection.append(w_hat.list())
+
+        # Generate new M_i, and multiplication M * M_i for "previous" round
+        M_i = matrix.identity(t)
+        M_i[list(range(1,t)), list(range(1,t))] = M_hat
+
+        test_mat = matrix(F, t, t)
+        test_mat[[0], list(range(0, t))] = MDS_matrix_field_transpose[[0], list(range(0, t))]
+        test_mat[[0], list(range(1, t))] = v
+        test_mat[list(range(1, t)), [0]] = w_hat
+        test_mat[list(range(1,t)), list(range(1,t))] = matrix.identity(t-1)
+
+        M_mul = MDS_matrix_field_transpose * M_i
+
+    return [M_i, v_collection, w_hat_collection, MDS_matrix_field_transpose[0, 0]]
 
 def generate_vectorspace(round_num, M, M_round, NUM_CELLS):
     t = NUM_CELLS
@@ -331,7 +367,7 @@ def print_matrix(M, t, rust=False):
             print_hex(entry, i == t-1, rust=rust)
         print("    ]," if rust else "],")
 
-def print_linear_layer(M, n, t, rust=False):
+def print_linear_layer(M, n, t, optimized=False, rust=False):
     print("n:", n)
     print("t:", t)
     print("N:", (n * t))
@@ -340,11 +376,12 @@ def print_linear_layer(M, n, t, rust=False):
     print("Result Algorithm 3:\n", algorithm_3(M, NUM_CELLS))
     print("Prime number:", "0x" + hex(PRIME_NUMBER))
 
-    print("MDS matrix:")
+    print("MDS matrix" + (" (optimized):" if optimized else ":"))
     print_matrix(M, t, rust=rust)
 
-    print("Inverse MDS matrix:")
-    print_matrix(invert_matrix(M), t, rust=rust)
+    if not optimized:
+        print("Inverse MDS matrix:")
+        print_matrix(invert_matrix(M), t, rust=rust)
 
 def main(args):
     if len(args) < 6:
@@ -382,7 +419,11 @@ def main(args):
 
     # Matrix
     linear_layer = generate_matrix(FIELD, FIELD_SIZE, NUM_CELLS)
-    print_linear_layer(linear_layer, FIELD_SIZE, NUM_CELLS, rust=rust)
+    print_linear_layer(linear_layer, FIELD_SIZE, NUM_CELLS, optimized=False, rust=rust)
+
+    # Matrix alternative
+    [linear_layer, v_col, w_hat_col, m00] = calc_equivalent_matrices(linear_layer, NUM_CELLS, R_P_FIXED)
+    print_linear_layer(linear_layer, FIELD_SIZE, NUM_CELLS, optimized=True, rust=rust)
 
     # Round constants
     round_constants = generate_constants(FIELD, FIELD_SIZE, NUM_CELLS, R_F_FIXED, R_P_FIXED, PRIME_NUMBER)
