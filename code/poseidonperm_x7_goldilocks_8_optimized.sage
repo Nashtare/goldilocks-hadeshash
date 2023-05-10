@@ -132,7 +132,7 @@ def perm(input_words):
         for i in range(0, t):
             state_words[i] = state_words[i] + round_constants_field_new[round_constants_round_counter][i]
         for i in range(0, t):
-            state_words[i] = (state_words[i])^3
+            state_words[i] = (state_words[i])**7
         state_words = list(MDS_matrix_field * vector(state_words))
         round_constants_round_counter += 1
 
@@ -145,7 +145,7 @@ def perm(input_words):
     for r in range(0, R_P):
         # Round constants, nonlinear layer, matrix multiplication
         #state_words = list(vector(state_words) * M_i)
-        state_words[0] = (state_words[0])^3
+        state_words[0] = (state_words[0])**7
         # Moved constants addition
         if r < (R_P - 1):
             round_constants_round_counter += 1
@@ -160,7 +160,7 @@ def perm(input_words):
         for i in range(0, t):
             state_words[i] = state_words[i] + round_constants_field_new[round_constants_round_counter][i]
         for i in range(0, t):
-            state_words[i] = (state_words[i])^3
+            state_words[i] = (state_words[i])**7
         state_words = list(MDS_matrix_field * vector(state_words))
         round_constants_round_counter += 1
 
@@ -187,7 +187,7 @@ def perm_original(input_words):
         for i in range(0, t):
             state_words[i] = state_words[i] + round_constants_field_new[round_constants_round_counter][i]
         for i in range(0, t):
-            state_words[i] = (state_words[i])^3
+            state_words[i] = (state_words[i])**7
         state_words = list(MDS_matrix_field * vector(state_words))
         round_constants_round_counter += 1
 
@@ -196,7 +196,7 @@ def perm_original(input_words):
         # Round constants, nonlinear layer, matrix multiplication
         for i in range(0, t):
             state_words[i] = state_words[i] + round_constants_field_new[round_constants_round_counter][i]
-        state_words[0] = (state_words[0])^3
+        state_words[0] = (state_words[0])**7
         state_words = list(MDS_matrix_field * vector(state_words))
         round_constants_round_counter += 1
 
@@ -206,7 +206,7 @@ def perm_original(input_words):
         for i in range(0, t):
             state_words[i] = state_words[i] + round_constants_field_new[round_constants_round_counter][i]
         for i in range(0, t):
-            state_words[i] = (state_words[i])^3
+            state_words[i] = (state_words[i])**7
         state_words = list(MDS_matrix_field * vector(state_words))
         round_constants_round_counter += 1
     
