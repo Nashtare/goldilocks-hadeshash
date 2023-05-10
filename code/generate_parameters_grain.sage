@@ -91,8 +91,27 @@ def print_hex(c, last, rust=False):
         hex_length = (FIELD_SIZE + 3)//4 + 2 # +2 for "0x"
         print("{0:#0{1}x}".format(c, hex_length), end="" if last else ", ")
 
-def print_round_constants(round_constants, n, t, field, rust=False):
-    print("Number of round constants:", len(round_constants))
+def calc_equivalent_constants(constants, MDS_matrix, t, R_F, R_P):
+    constants_temp = [constants[index:index+t] for index in range(0, len(constants), t)]
+
+    MDS_matrix_field_transpose = MDS_matrix.transpose()
+
+    # Start moving round constants up
+    # Calculate c_i' = M^(-1) * c_(i+1)
+    # Split c_i': Add c_i'[0] AFTER the S-box, add the rest to c_i
+    # I.e.: Store c_i'[0] for each of the partial rounds, and make c_i = c_i + c_i' (where now c_i'[0] = 0)
+    num_rounds = R_F + R_P
+    R_f = R_F / 2
+    for i in range(num_rounds - 2 - R_f, R_f - 1, -1):
+        inv_cip1 = list(vector(constants_temp[i+1]) * MDS_matrix_field_transpose.inverse())
+        constants_temp[i] = list(vector(constants_temp[i]) + vector([0] + inv_cip1[1:]))
+        constants_temp[i+1] = [inv_cip1[0]] + [0] * (t-1)
+
+    new_constants = [item for sublist in constants_temp for item in sublist]
+    return new_constants
+
+def print_round_constants(round_constants, n, t, field, optimized=False, rust=False):
+    print("Number of round constants" + (" (optimized):" if optimized else ":"), len(round_constants))
 
     if field == 0:
         print("Round constants for GF(2^n):")
@@ -361,13 +380,17 @@ def main(args):
     # Init
     init_generator(FIELD, SBOX, FIELD_SIZE, NUM_CELLS, R_F_FIXED, R_P_FIXED)
 
-    # Round constants
-    round_constants = generate_constants(FIELD, FIELD_SIZE, NUM_CELLS, R_F_FIXED, R_P_FIXED, PRIME_NUMBER)
-    print_round_constants(round_constants, FIELD_SIZE, NUM_CELLS, FIELD, rust=rust)
-
     # Matrix
     linear_layer = generate_matrix(FIELD, FIELD_SIZE, NUM_CELLS)
     print_linear_layer(linear_layer, FIELD_SIZE, NUM_CELLS, rust=rust)
+
+    # Round constants
+    round_constants = generate_constants(FIELD, FIELD_SIZE, NUM_CELLS, R_F_FIXED, R_P_FIXED, PRIME_NUMBER)
+    print_round_constants(round_constants, FIELD_SIZE, NUM_CELLS, FIELD, optimized=False, rust=rust)
+
+    # Round constants alternative
+    round_constants_optimized = calc_equivalent_constants(round_constants, linear_layer, NUM_CELLS, R_F_FIXED, R_P_FIXED)
+    print_round_constants(round_constants_optimized, FIELD_SIZE, NUM_CELLS, FIELD, optimized=True, rust=rust)
 
     print(f"NUM ROUNDS: {len(round_constants) // NUM_CELLS}")
 
