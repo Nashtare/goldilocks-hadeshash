@@ -424,6 +424,12 @@ def main(args):
     # Matrix alternative
     [linear_layer, v_col, w_hat_col, m00] = calc_equivalent_matrices(linear_layer, NUM_CELLS, R_P_FIXED)
     print_linear_layer(linear_layer, FIELD_SIZE, NUM_CELLS, optimized=True, rust=rust)
+    print("v_collection")
+    print_matrix(v_col, NUM_CELLS, rust=rust)
+    print("w_hat_collection")
+    print_matrix(v_col, NUM_CELLS, rust=rust)
+    print("M_00")
+    print_hex(m00, last=True, rust=rust)
 
     # Round constants
     round_constants = generate_constants(FIELD, FIELD_SIZE, NUM_CELLS, R_F_FIXED, R_P_FIXED, PRIME_NUMBER)
