@@ -367,6 +367,13 @@ def print_matrix(M, t, rust=False):
             print_hex(entry, i == t-1, rust=rust)
         print("    ]," if rust else "],")
 
+def print_matrix_non_square(M, t, R_P, rust=False):
+    for row in range(R_P):
+        print("    [", end="\n" if rust else "")
+        for (i, entry) in enumerate(M[row]):
+            print_hex(entry, i == t-1, rust=rust)
+        print("    ]," if rust else "],")
+
 def print_linear_layer(M, n, t, optimized=False, rust=False):
     print("n:", n)
     print("t:", t)
@@ -422,12 +429,12 @@ def main(args):
     print_linear_layer(linear_layer, FIELD_SIZE, NUM_CELLS, optimized=False, rust=rust)
 
     # Matrix alternative
-    [linear_layer, v_col, w_hat_col, m00] = calc_equivalent_matrices(linear_layer, NUM_CELLS, R_P_FIXED)
-    print_linear_layer(linear_layer, FIELD_SIZE, NUM_CELLS, optimized=True, rust=rust)
+    [new_linear_layer, v_col, w_hat_col, m00] = calc_equivalent_matrices(linear_layer, NUM_CELLS, R_P_FIXED)
+    print_linear_layer(new_linear_layer, FIELD_SIZE, NUM_CELLS, optimized=True, rust=rust)
     print("v_collection")
-    print_matrix(v_col, NUM_CELLS, rust=rust)
+    print_matrix_non_square(v_col, NUM_CELLS, R_P_FIXED, rust=rust)
     print("w_hat_collection")
-    print_matrix(v_col, NUM_CELLS, rust=rust)
+    print_matrix_non_square(w_hat_col, NUM_CELLS, R_P_FIXED, rust=rust)
     print("M_00")
     print_hex(m00, last=True, rust=rust)
 
